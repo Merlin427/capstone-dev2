@@ -58,7 +58,7 @@ def index():
 @app.route('/dashboard')
 def dash():
     return render_template('pages/dashboard.html')
-    print(payload)
+
 
 @app.route('/home')
 @requires_auth('get:anything')
