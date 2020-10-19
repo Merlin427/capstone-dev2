@@ -20,7 +20,7 @@ from functools import wraps
 
 from auth.auth import AuthError, requires_auth
 from models import *
-import constants
+
 #----------------------------------------------------------------------------#
 # App Config
 #----------------------------------------------------------------------------#
@@ -31,33 +31,9 @@ db.init_app(app)
 CORS(app)
 migrate = Migrate(app, db)
 
-
-AUTH0_CLIENT_ID = 'zWJfWgsOelcUY1yYwupvofc2oCr7JO52'
-AUTH0_CLIENT_SECRET = 'YBV-ywAAlOWdLmJQaokgRJqeIdIEfmfINcqYkRpDliy9SojmXCxZ1VEjT3yTb-6p'
-AUTH0_CALLBACK_URL = 'http://localhost:5000/callback'
 AUTH0_DOMAIN = 'dvcoffee.us.auth0.com'
-AUTH0_AUDIENCE = 'http://localhost:5000'
-PROFILE_KEY = 'profile'
-SECRET_KEY = 'YBV-ywAAlOWdLmJQaokgRJqeIdIEfmfINcqYkRpDliy9SojmXCxZ1VEjT3yTb-6p'
-JWT_PAYLOAD = 'jwt_payload'
-ALGORITHMS = ['RS256']
 API_AUDIENCE = 'http://localhost:5000'
-AUTH0_BASE_URL = 'https://' + AUTH0_DOMAIN
-
-oauth = OAuth(app)
-
-auth0 = oauth.register(
-    'auth0',
-    client_id=AUTH0_CLIENT_ID,
-    client_secret=AUTH0_CLIENT_SECRET,
-    api_base_url=AUTH0_BASE_URL,
-    access_token_url=AUTH0_BASE_URL + '/oauth/token',
-    authorize_url=AUTH0_BASE_URL + '/authorize',
-    client_kwargs={
-        'scope': 'openid profile email',
-    },
-)
-
+ALGORITHMS = ["RS256"]
 #----------------------------------------------------------------------------#
 # Filters (From Fyyur Project)
 #----------------------------------------------------------------------------#
@@ -79,39 +55,10 @@ app.jinja_env.filters['datetime'] = format_datetime
 def index():
     return render_template('pages/login.html')
 
-
-@app.route('/login')
-def login():
-    return auth0.authorize_redirect(redirect_uri=AUTH0_CALLBACK_URL, audience=AUTH0_AUDIENCE)
-
-@app.route('/logout')
-def logout():
-    session.clear()
-    params = {'returnTo': url_for('index', _external=True), 'client_id': AUTH0_CLIENT_ID}
-    return redirect(auth0.api_base_url + '/v2/logout?' + urlencode(params))
-
-
-@app.route('/callback')
-def callback_handling():
-    auth0.authorize_access_token()
-    resp = auth0.get('userinfo')
-    userinfo = resp.json()
-
-    session[constants.JWT_PAYLOAD] = userinfo
-    session[constants.PROFILE_KEY] = {
-        'user_id': userinfo['sub'],
-        'name': userinfo['name'],
-        'picture': userinfo['picture']
-    }
-    return redirect('/dashboard')
-
-
 @app.route('/dashboard')
-def dashboard():
+def dash():
     return render_template('pages/dashboard.html')
-
-
-
+    print(payload)
 
 @app.route('/home')
 @requires_auth('get:anything')
