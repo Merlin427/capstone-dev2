@@ -152,6 +152,10 @@ def validate_auth_header(auth_header):
         valid_auth = False
     return valid_auth
 
+
+
+
+
 def get_token():
     headers = request.headers
     if 'Authorization' in request.headers:
@@ -168,7 +172,7 @@ def get_token():
     raise AuthError({
         'status': 401,
         'message': 'Unauthorized'
-    }, status_code=40
+    }, status_code=401)
 
 
 
