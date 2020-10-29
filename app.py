@@ -2,7 +2,7 @@
 # Imports
 #----------------------------------------------------------------------------#
 import os
-from flask import Flask, request, abort, jsonify, render_template, redirect, url_for, abort, jsonify, session
+from flask import Flask, request, abort, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from flask_migrate import Migrate
@@ -17,10 +17,11 @@ from authlib.integrations.flask_client import OAuth
 from six.moves.urllib.parse import urlencode
 import json
 from functools import wraps
-
+from flask_cors import CORS
 from auth.auth import AuthError, requires_auth
 from models import *
-
+from sqlalchemy import exc
+import json
 #----------------------------------------------------------------------------#
 # App Config
 #----------------------------------------------------------------------------#
@@ -31,12 +32,14 @@ db.init_app(app)
 CORS(app)
 migrate = Migrate(app, db)
 
+
+
 AUTH0_DOMAIN = 'dvcoffee.us.auth0.com'
 API_AUDIENCE = 'http://localhost:5000'
 ALGORITHMS = ["RS256"]
-#----------------------------------------------------------------------------#
-# Filters (From Fyyur Project)
-#----------------------------------------------------------------------------#
+    #----------------------------------------------------------------------------#
+    # Filters (From Fyyur Project)
+    #----------------------------------------------------------------------------#
 def format_datetime(value, format='medium'):
   date = dateutil.parser.parse(value)
   if format == 'full':
@@ -47,538 +50,370 @@ def format_datetime(value, format='medium'):
 
 app.jinja_env.filters['datetime'] = format_datetime
 
-#----------------------------------------------------------------------------#
-# Controllers
-#----------------------------------------------------------------------------#
+    #----------------------------------------------------------------------------#
+    # Controllers
+    #----------------------------------------------------------------------------#
 
 @app.route('/')
-def index():
-    return render_template('pages/login.html')
-
-@app.route('/dashboard')
-def dash():
-    return render_template('pages/dashboard.html')
+def health():
+    return jsonify({'health': 'Running!!'}), 200
 
 
-@app.route('/home')
-@requires_auth('get:anything')
-def home(payload):
-    return render_template('pages/home.html')
 
 @app.route('/contractors', methods=['GET'])
-@requires_auth('get:anything')
-def contractors(payload):
-    contractors=Contractor.query.all()
-    data=[]
-    for contractor in contractors:
-        data.append({
-        "id": contractor.id,
-        "name": contractor.name
+#@requires_auth('get:anything')
+def contractors(): #remember to pass in payload when activating auth
+    try:
+        contractors=Contractor.query.all()
+
+        return jsonify({
+            'success': True,
+            'contractors': [contractor.long() for contractor in contractors]
         })
 
-    return render_template('pages/contractors.html', contractors=data)
-
-
-
-@app.route('/contractors/<int:contractor_id>')
-@requires_auth('get:anything')
-def show_contractor(payload, contractor_id):
-    contractor = Contractor.query.get(contractor_id)
-
-    if not contractor:
-        return redirect(url_for('index'))
-
-    else:
-
-        data={
-        "id": contractor_id,
-        "name": contractor.name,
-        "phone": contractor.phone
-        }
-
-    return render_template('pages/show_contractor.html', contractor=data)
-
-@app.route('/contractors/create', methods=['GET'])
-def add_contractor_form():
-  form = ContractorForm()
-  return render_template('forms/new_contractor.html', form=form)
-
-
-
-@app.route('/contractors/create', methods=['POST'])
-@requires_auth('post:anything')
-def add_contractor(payload):
-
-    form = ContractorForm(request.form, meta={"csrf": False})
-
-    name = form.name.data.strip()
-    phone = form.phone.data.strip()
-
-    if not form.validate():
-        abort(404)
-
-    else:
-        insert_error = False
-        try:
-
-            new_contractor = Contractor(name=name, phone=phone)
-
-            db.session.add(new_contractor)
-            db.session.commit()
-
-        except Exception as e:
-            insert_error = True
-            print(f'Exception "{e}" in add_contractor()')
-            db.session.rollback()
-        finally:
-            db.session.close()
-
-        if not insert_error:
-            return redirect(url_for('contractors'))
-
-
-@app.route('/contractors/<int:contractor_id>/delete', methods=['GET'])
-@requires_auth('delete:anything')
-def delete_contractor(payload, contractor_id):
-    error = False
-    contractor = Contractor.query.get(contractor_id)
-
-    try:
-        db.session.delete(contractor)
-        db.session.commit()
     except:
-        db.session.rollback()
-        error = True
-
-    finally:
-        db.session.close()
-
-    if error:
-        print("error in delete_contractor")
         abort(500)
 
-    else:
-        return redirect(url_for('contractors'))
 
 
-@app.route('/contractors/<int:contractor_id>/edit', methods=['GET'])
-@requires_auth('get:anything')
-def edit_contractor(payload, contractor_id):
+@app.route('/contractors/<int:contractor_id>', methods=['GET'])
+#@requires_auth('get:anything')
+def show_contractor(contractor_id): #payload, contractor_id
+    try:
+        contractor = Contractor.query.get(contractor_id)
 
-    contractor= Contractor.query.get(contractor_id)
+        return jsonify({
+            'success': True,
+            'contractor': contractor.long()
+        })
 
-    if not contractor:
-        return redirect(url_for('index'))
-
-    else:
-        form = ContractorForm(obj=contractor)
-
-    contractor = {
-        "id": contractor.id,
-        "name": contractor.name,
-        "phone": contractor.phone
-    }
-    return render_template('forms/edit_contractor.html', form=form, contractor=contractor)
+    except:
+        abort(500)
 
 
 
-@app.route('/contractors/<int:contractor_id>/edit', methods=['POST'])
-@requires_auth('patch:anything')
-def edit_contractor_submission(payload,contractor_id):
-    form = ContractorForm(request.form, meta={"csrf": False})
+@app.route('/contractors', methods=['POST'])
+#@requires_auth('post:anything')
+def add_contractor():
+    body = request.get_json()
 
-    name = form.name.data.strip()
-    phone = form.phone.data.strip()
+    if (body['name'].strip()=="") or (body['phone'].strip()==""):
+        abort(400)
 
-    if not form.validate():
+    try:
+        new_contractor = Contractor(name=body['name'].strip(), phone=body['phone'].strip())
+        new_contractor.insert()
+
+    except:
+        abort(422)
+
+    return jsonify({
+        'success': True,
+        'added': new_contractor.id
+    })
+
+
+
+
+
+
+@app.route('/contractors/<int:contractor_id>', methods=['DELETE'])
+#@requires_auth('delete:anything')
+def delete_contractor(contractor_id): #payload
+
+    contractor=Contractor.query.get(contractor_id)
+    if contractor is None:
         abort(404)
 
-    else:
-        update_error = False
-        try:
-            contractor=Contractor.query.get(contractor_id)
-            contractor.name = name
-            contractor.phone = phone
+    contractor.delete()
+
+    return jsonify({
+        'success' : True,
+        'contractor' : contractor.id
+    })
 
 
-            db.session.commit()
+@app.route('/contractors/<int:contractor_id>', methods=['PATCH'])
+#@requires_auth('get:anything')
+def edit_contractor(contractor_id):
+    contractor=Contractor.query.get(contractor_id)
+    if contractor is None:
+        abort(404)
 
-        except Exception as e:
-            update_error = True
-            print(f'Exception "{e}" in add_contractor()')
-            db.session.rollback()
-        finally:
-            db.session.close()
+    data = request.get_json()
+    if 'name' in data:
+        contractor.name = data['name']
 
-        if not update_error:
-            return redirect(url_for('contractors'))
+    if 'phone' in data:
+        contractor.phone = data['phone']
 
+    contractor.update()
+
+    return jsonify({
+        'success' : True,
+        'contractor' : contractor.id
+    }), 200
 
 
 
 @app.route('/clients', methods=['GET'])
-@requires_auth('get:anything')
-def clients(payload):
-    clients=Client.query.all()
-    data=[]
-    for client in clients:
-        data.append({
-        "id": client.id,
-        "name": client.name
+#@requires_auth('get:anything')
+def clients(): #remember to pass in payload when activating auth
+    try:
+        clients=Client.query.all()
+
+        return jsonify({
+            'success': True,
+            'clients': [client.long() for client in clients]
         })
 
-    print(data)
-    return render_template('pages/clients.html', clients=data)
-
-
-@app.route('/clients/<int:client_id>')
-@requires_auth('get:anything')
-def show_client(payload, client_id):
-    client = Client.query.get(client_id)
-
-    if not client:
-        return redirect(url_for('index'))
-
-    else:
-
-        data={
-        "id": client_id,
-        "name": client.name,
-        "phone": client.phone,
-        "address": client.address
-        }
-
-
-    return render_template('pages/show_clients.html', client=data)
-
-
-@app.route('/clients/create', methods=['GET'])
-def add_client_form():
-  form = ClientForm()
-  return render_template('forms/new_client.html', form=form)
-
-
-@app.route('/clients/create', methods=['POST'])
-@requires_auth('post:anything')
-def add_client(payload):
-
-    form = ClientForm(request.form, meta={"csrf": False})
-
-    name = form.name.data.strip()
-    phone = form.phone.data.strip()
-    address = form.address.data.strip()
-
-    if not form.validate():
-        abort(404)
-
-    else:
-        insert_error = False
-        try:
-
-            new_client = Client(name=name, phone=phone, address=address)
-
-            db.session.add(new_client)
-            db.session.commit()
-
-        except Exception as e:
-            insert_error = True
-            print(f'Exception "{e}" in add_client()')
-            db.session.rollback()
-        finally:
-            db.session.close()
-
-        if not insert_error:
-            return redirect(url_for('clients'))
-
-
-@app.route('/clients/<int:client_id>/delete', methods=['GET'])
-@requires_auth('delete:anything')
-def delete_client(payload, client_id):
-    error = False
-    client = Client.query.get(client_id)
-
-    try:
-        db.session.delete(client)
-        db.session.commit()
     except:
-        db.session.rollback()
-        error = True
-
-    finally:
-        db.session.close()
-
-    if error:
-        print("error in delete_client")
         abort(500)
 
-    else:
-        return redirect(url_for('clients'))
 
 
-@app.route('/clients/<int:client_id>/edit', methods=['GET'])
-def edit_client(client_id):
-
-    client= Client.query.get(client_id)
-
-    if not client:
-        return redirect(url_for('index'))
-
-    else:
-        form = ClientForm(obj=client)
-
-    client = {
-        "id": client.id,
-        "name": client.name,
-        "phone": client.phone,
-        "address": client.address
-    }
-    return render_template('forms/edit_client.html', form=form, client=client)
+@app.route('/clients/<int:client_id>', methods=['GET'])
+#@requires_auth('get:anything')
+def show_client(client_id): #payload, contractor_id
+    try:
+        client = Client.query.get(client_id)
 
 
 
-@app.route('/clients/<int:client_id>/edit', methods=['POST'])
-@requires_auth('patch:anything')
-def edit_client_submission(payload, client_id):
-    form = ClientForm(request.form, meta={"csrf": False})
+        return jsonify({
+            'success': True,
+            'client': client.long()
+        })
 
-    name = form.name.data.strip()
-    phone = form.phone.data.strip()
-    address = form.address.data.strip()
+    except:
+        abort(500)
 
-    if not form.validate():
+
+
+@app.route('/clients', methods=['POST'])
+#@requires_auth('post:anything')
+def add_client():
+    body = request.get_json()
+
+    if (body['name'].strip()=="") or (body['phone'].strip()==""):
+        abort(400)
+
+    try:
+        new_client = Client(name=body['name'].strip(), phone=body['phone'].strip(), address=body['address'].strip())
+        new_client.insert()
+
+    except:
+        abort(422)
+
+    return jsonify({
+        'success': True,
+        'added': new_client.id
+    })
+
+
+
+
+
+
+@app.route('/clients/<int:client_id>', methods=['DELETE'])
+#@requires_auth('delete:anything')
+def delete_client(client_id): #payload
+
+    client=Client.query.get(client_id)
+    if client is None:
         abort(404)
 
-    else:
-        update_error = False
-        try:
-            client=Client.query.get(client_id)
-            client.name = name
-            client.phone = phone
-            client.address = address
+    client.delete()
+
+    return jsonify({
+        'success' : True,
+        'client' : client.id
+    })
 
 
-            db.session.commit()
+@app.route('/clients/<int:client_id>', methods=['PATCH'])
+#@requires_auth('get:anything')
+def edit_client(client_id):
+    client=Client.query.get(client_id)
+    if client is None:
+        abort(404)
 
-        except Exception as e:
-            update_error = True
-            print(f'Exception "{e}" in add_client_submission()')
-            db.session.rollback()
-        finally:
-            db.session.close()
+    data = request.get_json()
+    if 'name' in data:
+        client.name = data['name']
 
-        if not update_error:
-            return redirect(url_for('clients'))
+    if 'phone' in data:
+        client.phone = data['phone']
+
+    if 'address' in data:
+        client.address = data['address']
+
+    client.update()
+
+    return jsonify({
+        'success' : True,
+        'client' : client.id
+    }), 200
+
+
 
 
 @app.route('/jobs', methods=['GET'])
-@requires_auth('get:anything')
-def jobs(payload):
-    jobs=Job.query.all()
-    data=[]
-    for job in jobs:
-        data.append({
-        "id": job.id,
-        "client_id": job.client.id,
-        "client_name": job.client.name,
-        "client_address": job.client.address,
-        "contractor_name": job.contractor.name,
-        "start_time": format_datetime(str(job.start_time))
+#@requires_auth('get:anything')
+def jobs(): #remember to pass in payload when activating auth
+    try:
+        jobs=Job.query.all()
+        print(jobs)
+
+        return jsonify({
+            'success': True,
+            'jobs': [job.long() for job in jobs]
         })
 
-    print(data)
-    return render_template('pages/jobs.html', jobs=data)
+    except:
+        abort(500)
 
 
 @app.route('/jobs/<int:job_id>', methods=['GET'])
-@requires_auth('get:anything')
-def show_job(payload, job_id):
+#@requires_auth('get:anything')
+def show_job(job_id): #payload
     job = Job.query.get(job_id)
 
     if not job:
-        return redirect(url_for('index'))
+        return redirect(url_for('health'))
 
     else:
+        try:
 
-        data={
-        "id": job_id,
-        "client": job.client.name,
-        "address": job.client.address,
-        "phone": job.client.phone,
-        "contractor": job.contractor.name,
-        "start_time": format_datetime(str(job.start_time))
-        }
+            return jsonify({
+            "success": True,
+            "job": [job.long()]
 
-    print(data)
+            })
 
-    return render_template('pages/show_jobs.html', job=data)
-
-@app.route('/jobs/create', methods=['GET'])
-def add_job_form():
-  form = JobForm()
-  return render_template('forms/new_job.html', form=form)
+        except:
+            abort(500)
 
 
-@app.route('/jobs/create', methods=['POST'])
-@requires_auth('post:anything')
-def create_job(payload):
 
-    form= JobForm()
+@app.route('/jobs', methods=['POST'])
+#@requires_auth('post:anything')
+def add_job():
+    body = request.get_json()
 
-    contractor_id = form.contractor_id.data.strip()
-    client_id = form.client_id.data.strip()
-    start_time = form.start_time.data
-
-    insert_error=False
+    if (body['contractor id']=="") or (body['client id']==""):
+        abort(400)
 
     try:
-        new_job = Job(start_time=start_time, contractor_id=contractor_id, client_id=client_id)
-        db.session.add(new_job)
-        db.session.commit()
-    except Exception as e:
-        insert_error=True
-        print(f'Exception "{e}" in create_job')
-        db.session.rollback()
-    finally:
-        db.session.close()
-    if insert_error:
+        new_job = Job(contractor_id=body['contractor id'], client_id=body['client id'], start_time=body['start time'])
+        new_job.insert()
 
-        print("Error in create_job")
-    else:
-        return redirect(url_for('jobs'))
+    except:
+        abort(422)
+
+    return jsonify({
+        'success': True,
+        'added': new_job.id
+    })
 
 
-@app.route('/jobs/<int:job_id>/edit', methods=['GET'])
+@app.route('/jobs/<int:job_id>', methods=['PATCH'])
+#@requires_auth('get:anything')
 def edit_job(job_id):
-
-    job= Job.query.get(job_id)
-
-    if not job:
-        return redirect(url_for('index'))
-
-    else:
-        form = JobForm(obj=job)
-
-    job = {
-        "id": job.id,
-        "client_id": job.client.id,
-        "contractor_id": job.contractor.id
-
-    }
-    return render_template('forms/edit_job.html', form=form, job=job)
-
-
-
-@app.route('/jobs/<int:job_id>/edit', methods=['POST'])
-@requires_auth('patch:anything')
-def edit_job_submission(payload, job_id):
-    form = JobForm(request.form, meta={"csrf": False})
-
-    contractor_id = form.contractor_id.data.strip()
-    client_id = form.client_id.data.strip()
-    start_time = form.start_time.data
-
-    if not form.validate():
+    job=Job.query.get(job_id)
+    if job is None:
         abort(404)
 
-    else:
-        update_error = False
-        try:
-            job=Job.query.get(job_id)
-            job.client_id = client_id
-            job.contractor_id = contractor_id
-            job.start_time = start_time
+    data = request.get_json()
+    if 'client id' in data:
+        job.client_id = data['client id']
 
+    if 'contractor id' in data:
+        job.contractor_id = data['contractor id']
 
+    if 'start time' in data:
+        job.start_time = data['start time']
 
-            db.session.commit()
+    job.update()
 
-        except Exception as e:
-            update_error = True
-            print(f'Exception "{e}" in edit_job_submission()')
-            db.session.rollback()
-        finally:
-            db.session.close()
-
-        if not update_error:
-            return redirect(url_for('jobs'))
-
-
-@app.route('/jobs/<int:job_id>/delete', methods=['GET'])
-@requires_auth('delte:anything')
-def delete_job(payload, job_id):
-    error = False
-    job = Job.query.get(job_id)
-
-    try:
-        db.session.delete(job)
-        db.session.commit()
-    except:
-        db.session.rollback()
-        error = True
-
-    finally:
-        db.session.close()
-
-    if error:
-        print("error in delete_job")
-        abort(500)
-
-    else:
-        return redirect(url_for('jobs'))
-
-#----------------------------------------------------------------------------#
-# Error Handlers
-#----------------------------------------------------------------------------#
-
-@app.errorhandler(422)
-def unprocessable(error):
     return jsonify({
-                    "success": False,
-                    "error": 422,
-                    "message": "unprocessable"
-                    }), 422
+        'success' : True,
+        'job' : job.id
+    }), 200
 
 
-@app.errorhandler(400)
-def bad_request(error):
-    return jsonify({
-        "success": False,
-        "error": 400,
-        "message": 'Bad Request'
-    }), 400
 
-@app.errorhandler(401)
-def unauthorised(error):
-    return jsonify({
-        "success": False,
-        "error": 401,
-        "message": 'Unauthorised'
-    }), 401
 
-@app.errorhandler(404)
-def not_found(error):
-    return jsonify({
-        "success": False,
-        "error": 404,
-        "message": 'Not Found'
-    }), 404
+@app.route('/jobs/<int:job_id>', methods=['DELETE'])
+#@requires_auth('delete:anything')
+def delete_job(job_id): #payload
 
-@app.errorhandler(500)
-def internal_server_error(error):
+    job=Job.query.get(job_id)
+    if job is None:
+        abort(404)
+
+    job.delete()
+
     return jsonify({
-        "success": False,
-        "error": 500,
-        "message": 'Internal Server Error'
-    }), 500
-'''
-@app.errorhandler(AuthError)
-def auth_error(error):
-    return jsonify({
-        "success": False,
-        "error": error.status_code,
-        "message": error.error['description']
-    }), 401
+        'success' : True,
+        'client' : job.id
+    })
+
+'''            
+
+    #----------------------------------------------------------------------------#
+    # Error Handlers
+    #----------------------------------------------------------------------------#
+
+    @app.errorhandler(422)
+    def unprocessable(error):
+        return jsonify({
+                        "success": False,
+                        "error": 422,
+                        "message": "unprocessable"
+                        }), 422
+
+
+    @app.errorhandler(400)
+    def bad_request(error):
+        return jsonify({
+            "success": False,
+            "error": 400,
+            "message": 'Bad Request'
+        }), 400
+
+    @app.errorhandler(401)
+    def unauthorised(error):
+        return jsonify({
+            "success": False,
+            "error": 401,
+            "message": 'Unauthorised'
+        }), 401
+
+    @app.errorhandler(404)
+    def not_found(error):
+        return jsonify({
+            "success": False,
+            "error": 404,
+            "message": 'Not Found'
+        }), 404
+
+    @app.errorhandler(500)
+    def internal_server_error(error):
+        return jsonify({
+            "success": False,
+            "error": 500,
+            "message": 'Internal Server Error'
+        }), 500
+
+    @app.errorhandler(AuthError)
+    def auth_error(error):
+        return jsonify({
+            "success": False,
+            "error": error.status_code,
+            "message": error.error['description']
+        }), 401
 '''
 
-if __name__ == '__main__':
-    APP.run(host='0.0.0.0', port=8080, debug=True)
+#if __name__ == '__main__':
+#    APP.run(host='0.0.0.0', port=8080, debug=True)

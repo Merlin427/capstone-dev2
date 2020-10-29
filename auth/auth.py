@@ -10,7 +10,7 @@ ALGORITHMS = ['RS256']
 API_AUDIENCE = 'http://localhost:5000'
 
 ## AuthError Exception
-'''
+
 class AuthError(Exception):
     def __init__(self, error, status_code):
         self.error = error
@@ -135,7 +135,7 @@ def requires_auth(permission=''):
 
         return wrapper
     return requires_auth_decorator
-'''
+
 
 class AuthError(Exception):
     def __init__(self, error, status_code):
