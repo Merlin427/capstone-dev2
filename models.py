@@ -109,7 +109,9 @@ class Job(db.Model): #New model for shows
     contractor_id = db.Column(db.Integer, db.ForeignKey('contractor.id', ondelete='CASCADE'), nullable=False)
     client_id = db.Column(db.Integer, db.ForeignKey('client.id', ondelete='CASCADE'), nullable=False)
 
-    def __init__(self, start_time):
+    def __init__(self, contractor_id, client_id, start_time):
+        self.contractor_id = contractor_id
+        self.client_id = client_id
         self.start_time = start_time
 
     def insert(self):

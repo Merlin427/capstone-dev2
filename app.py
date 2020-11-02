@@ -195,6 +195,7 @@ def show_client(client_id): #payload, contractor_id
 def add_client():
     body = request.get_json()
 
+
     if (body['name'].strip()=="") or (body['phone'].strip()==""):
         abort(400)
 
@@ -300,21 +301,25 @@ def show_job(job_id): #payload
 #@requires_auth('post:anything')
 def add_job():
     body = request.get_json()
+    print(body)
+
 
     if (body['contractor id']=="") or (body['client id']==""):
         abort(400)
 
-    try:
-        new_job = Job(contractor_id=body['contractor id'], client_id=body['client id'], start_time=body['start time'])
-        new_job.insert()
+    # try:
+    new_job = Job(contractor_id=body['contractor id'], client_id=body['client id'], start_time=body['start time'])
+    new_job.insert()
 
-    except:
-        abort(422)
+    # except:
+    #     abort(500)
 
     return jsonify({
         'success': True,
         'added': new_job.id
     })
+
+
 
 
 @app.route('/jobs/<int:job_id>', methods=['PATCH'])
@@ -359,7 +364,7 @@ def delete_job(job_id): #payload
         'client' : job.id
     })
 
-'''            
+'''
 
     #----------------------------------------------------------------------------#
     # Error Handlers
