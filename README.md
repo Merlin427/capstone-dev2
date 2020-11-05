@@ -57,9 +57,9 @@ Employee
 permissions:
   get:anything
   post:anything
-
+```
 Manager
-
+```bash
 permissions:
   get:anything
   post:anything
@@ -358,4 +358,79 @@ DELETE '/jobs/int:job_id'
   "success": true,
   "job": (job id as an integer)
 }
+```
+
+#### Error Handlers
+
+```bash
+
+@app.errorhandler(422)
+  def unprocessable(error):
+      return jsonify({
+          "success": False,
+          "error": 422,
+          "message": "unprocessable"
+      }), 422
+
+
+  @app.errorhandler(400)
+  def bad_request(error):
+      return jsonify({
+          "success": False,
+          "error": 400,
+          "message": 'Bad Request'
+      }), 400
+
+  @app.errorhandler(401)
+  def unauthorised(error):
+      return jsonify({
+          "success": False,
+          "error": 401,
+          "message": 'Unauthorised'
+      }), 401
+
+  @app.errorhandler(404)
+  def not_found(error):
+      return jsonify({
+          "success": False,
+          "error": 404,
+          "message": 'Not Found'
+      }), 404
+
+  @app.errorhandler(500)
+  def internal_server_error(error):
+      return jsonify({
+          "success": False,
+          "error": 500,
+          "message": 'Internal Server Error'
+      }), 500
+```
+
+## Testing
+
+1. Create a new database named capstone_test:
+```bash
+ createdb capstone_test
+ ```
+
+ 2. Populate the database with the included file testdata.sql with the following command:
+ ```bash
+ psql capstone_test < testdata.sql
+ ```
+
+ 3. IN test_app.py, set the database_name to "capstone_test" and database_path to your local machine.
+
+ 4. From the project directory run the following command in the command line:
+ ```bash
+python3 test_app.py
+```
+
+4. 37 Tests should complete successfully.
+
+5. The database should be reset completely between testing sessions, this can be done by dropping the database, recreating it and repopulating with testdata.sql
+
+```bash
+drop database capstone_test
+create database capstone_test
+psql capstone_test < testdata.sql
 ```
