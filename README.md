@@ -1,4 +1,4 @@
-# Contractor manager API
+# Contractor Manager API
 
 ## Capstone Project for Udacity's Full Stack Web Developer Nanodegree
 This app will help an electrical contracting company manage their personnel and jobs. The purpose of the project is to demonstrate the skills learned in the Udacity Full Stack Nano Degree program.
@@ -440,7 +440,7 @@ psql capstone_test < testdata.sql
 
 # Author
 
-- Danie van Rensburg - [Github](https://github.com/Merlin427)
+- Danie van Rensburg - https://github.com/Merlin427
 
 # Acknowledgements
 
