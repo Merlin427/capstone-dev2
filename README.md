@@ -21,9 +21,9 @@ For Python projects, it is recommended that you work within a virtual environmen
 
 Once you have your virtual environment setup and running, you can install the other dependencies by running:
 
-'''bash
+```bash
 pip install -r requirements.txt
-'''
+```
 
 This will install all of the required packages.
 
@@ -53,22 +53,19 @@ These parameters are needed for proper setup of the application.
 Within this account, you will need to create an API with RBAC enabled. Two Roles will also be needed:
 
 Employee
-
-'''bash
+```bash
 permissions:
   get:anything
   post:anything
-'''
 
 Manager
 
-'''bash
 permissions:
   get:anything
   post:anything
   patch:anything
   delete:anything
-'''
+```
 
 Note the identifier, as this is needed in the setup of the application.
 
@@ -89,11 +86,11 @@ Setting the `FLASK_DEBUG` variable to `true` will detect file changes and restar
 
 Setting the `FLASK_APP` variable to `app.py` directs flask to use the `app.py` file to find the application.
 
-## Api documentation
+## API documentation
 
 ## Getting Started
 
-Base URL: This application can be run locally. The hosted version is at ''' bash somelink '''
+Base URL: This application can be run locally. The hosted version is at ``` bash somelink ```
 
 ## Endpoints and Error Handlers
 
@@ -116,7 +113,7 @@ Base URL: This application can be run locally. The hosted version is at ''' bash
 15. DELETE '/clients/int:client_id'
 16. DELETE '/jobs/int:job_id'
 
-
+```bash
 GET '/'
 - No Authorisation required
 - Shows the application is running
@@ -361,3 +358,4 @@ DELETE '/jobs/int:job_id'
   "success": true,
   "job": (job id as an integer)
 }
+```
