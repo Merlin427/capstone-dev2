@@ -3,8 +3,8 @@ import unittest
 import json
 from flask_sqlalchemy import SQLAlchemy
 
-from app import app
-from models import Contractor, Client, Job
+from app import create_app
+from models import setup_db, Contractor, Client, Job
 
 
 class FsndCapstoneTestCase(unittest.TestCase):
@@ -30,14 +30,20 @@ class FsndCapstoneTestCase(unittest.TestCase):
 
         # Test variables
         # TOKENS
-        self.manager = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InJCZnJJX2pDMm1lTF83SnFwU2JibyJ9.eyJpc3MiOiJodHRwczovL2R2Y29mZmVlLnVzLmF1dGgwLmNvbS8iLCJzdWIiOiJhdXRoMHw1Zjg0MjNjNTg4YTI1YTAwNmJiZGI2OWMiLCJhdWQiOiJodHRwOi8vbG9jYWxob3N0OjUwMDAiLCJpYXQiOjE2MDQzMDkyODksImV4cCI6MTYwNDM5NTY4OSwiYXpwIjoieldKZldnc09lbGNVWTF5WXd1cHZvZmMyb0NyN0pPNTIiLCJzY29wZSI6IiIsInBlcm1pc3Npb25zIjpbImRlbGV0ZTphbnl0aGluZyIsImdldDphbnl0aGluZyIsInBhdGNoOmFueXRoaW5nIiwicG9zdDphbnl0aGluZyJdfQ.P0JVa8jiZeH0-myWVy_91C70fGgd9cVUveakz7vqslToGbOiObuNaMkhB94cU7d63hEblSgDzuNS-DAtJmHeYpIyvnvsqEcCU1k3Erq0qBCiDD82d1R7XKmUBYPrz9fnh2VkslisTy5BChPODGhej_rvv3xNwLVXD4_4JraEYV5whC_FDyN1cQS76785XzFGIQAgNHTq5JsRa7_-ii-pS0ccGBHhjUIdIrmKO6ih9yzobyQZU4Z_GYG9qMkMS_uMrZkGYFqjEYF-loeY6YyOqrAZPaQPoshhzGoe-1HhyVAm1igK-GLsX6O--m11zgPY50hkkJQFnkmRPISIifW3vA'
-        self.employee = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InJCZnJJX2pDMm1lTF83SnFwU2JibyJ9.eyJpc3MiOiJodHRwczovL2R2Y29mZmVlLnVzLmF1dGgwLmNvbS8iLCJzdWIiOiJhdXRoMHw1Zjg1NjYxODljZmRiYzAwNmUwZWU1YjQiLCJhdWQiOiJodHRwOi8vbG9jYWxob3N0OjUwMDAiLCJpYXQiOjE2MDQzMDkzOTUsImV4cCI6MTYwNDM5NTc5NSwiYXpwIjoieldKZldnc09lbGNVWTF5WXd1cHZvZmMyb0NyN0pPNTIiLCJzY29wZSI6IiIsInBlcm1pc3Npb25zIjpbImdldDphbnl0aGluZyIsInBvc3Q6YW55dGhpbmciXX0.1O4QSF5amSlcxtfO16iFtaCFabAurLquifq1mUTuPlwb5OcmtSK-4UIs2BoJNF60HWUpvtZgokj3bJYlTItFh1z3S1ZtEwxpwp1y2AVUp-pKjzifjxj3l2HufKpRt8LgPh1vXvwE3NW0BWcwkSsdKNnXjGIc9mH_m7ZN1Giztt5BirZf_WELS6hQfPgWg6Z_RiSg4qkDg2A_yY4wULA-udChqwLER2hJcgKzFR2HnlGAKEysaGmbcgPwMtcuOLPahu8rs0lTU93Eqj_KMwGggrM5amie_4kXIL2nZnucjsT5o8HkQyke5FuCpmJMe-MaOTrIjz6GwamcvnRUz7A5pQ'
+        self.manager_token = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InJCZnJJX2pDMm1lTF83SnFwU2JibyJ9.eyJpc3MiOiJodHRwczovL2R2Y29mZmVlLnVzLmF1dGgwLmNvbS8iLCJzdWIiOiJhdXRoMHw1Zjg0MjNjNTg4YTI1YTAwNmJiZGI2OWMiLCJhdWQiOiJodHRwOi8vbG9jYWxob3N0OjUwMDAiLCJpYXQiOjE2MDQ1NTYyMjUsImV4cCI6MTYwNDY0MjYyNSwiYXpwIjoieldKZldnc09lbGNVWTF5WXd1cHZvZmMyb0NyN0pPNTIiLCJzY29wZSI6IiIsInBlcm1pc3Npb25zIjpbImRlbGV0ZTphbnl0aGluZyIsImdldDphbnl0aGluZyIsInBhdGNoOmFueXRoaW5nIiwicG9zdDphbnl0aGluZyJdfQ.AqW9R2cegCFrX5YTDKulpaFBz4irpdeamDpwqYBXlEChWQxie3XJpTzbiFKH13lRkWbgfx0FHHlO_E2E93K1lmdreI-Rlyp2G4PTLhP_hfHmckGmkt0xGmoKLXYAjYTlhPB_ofHtlZs-tiWNKtTg-4ZKatTHfhn5_JCJhhlchGW_R9l2s97F2OfsG5h4hRw6CotQc72sHvc3O_0tPD3FY7Z2Fzudx2VG3VZ6qNJ_cxMWhQw5UCuY5PwaC9OVF85fvu_MIwWpA5o7PVI79LRGP_ew9oBuRhENqKpnFPCWEilisxf81ik0kspAiI1zEr0iqcI3ayv05hU1bC7yuOhDAw'
+        self.employee_token = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InJCZnJJX2pDMm1lTF83SnFwU2JibyJ9.eyJpc3MiOiJodHRwczovL2R2Y29mZmVlLnVzLmF1dGgwLmNvbS8iLCJzdWIiOiJhdXRoMHw1Zjg1NjYxODljZmRiYzAwNmUwZWU1YjQiLCJhdWQiOiJodHRwOi8vbG9jYWxob3N0OjUwMDAiLCJpYXQiOjE2MDQ1NTYzNDYsImV4cCI6MTYwNDY0Mjc0NiwiYXpwIjoieldKZldnc09lbGNVWTF5WXd1cHZvZmMyb0NyN0pPNTIiLCJzY29wZSI6IiIsInBlcm1pc3Npb25zIjpbImdldDphbnl0aGluZyIsInBvc3Q6YW55dGhpbmciXX0.QlJPU2hCh-1YkuLIAydOYSSBZmQ3XgLsPkbFBh0OjgYdcWaxbj68le0458bJrYZ39w7hXzcjQAyIkmQSkh1IwZs6EEOv3StYp78jFcp9CvcnGGSYaHAEmYOO-H_pjpquONoifKltimsdZ2VbcTnNqWYIQrVKgb3FMwlXhz2g6qS4SwlYzOMg_1X9cqkYwSM0kqSuomIBCowXJaak0IU_S_6Sknt3ikISmH67YNtRgLN86BMpljCGVgZhmyWIRpnxoYPKvl_mfZTl0FhMwcNrNCDHLAUStxKjKBFvmFQKYBpXzLxzx8nuvAf85qb4zQgNQCJL3XhzJFj0bEe8nd1PCg'
         self.badtoken = 'badtoken'
 
         # New Contractor
         self.new_contractor = {
             'name': 'Pawel Coetzer',
             'phone': '0514221935'
+        }
+
+        # Invalid new contractors
+        self.invalid_new_contractor = {
+            'name':"",
+            'phone':'0531984567'
         }
 
         #Patch Contractor
@@ -52,6 +58,13 @@ class FsndCapstoneTestCase(unittest.TestCase):
             'phone': "0103456789"
         }
 
+        # Invalid new Client
+        self.invalid_new_client = {
+            'name': "",
+            'address': "20 William Nickel",
+            'phone': "0103456789"
+        }
+
         #Patch Client
         self.change_client_address = {
             'address': 'New Address'
@@ -59,8 +72,15 @@ class FsndCapstoneTestCase(unittest.TestCase):
 
         # New job
         self.new_job = {
-            "contractor id": 1,
-            "client id": 1,
+            "contractor id": 2,
+            "client id": 2,
+            "start time": "2020 11 25T12:00"
+        }
+
+        # Invalid job
+        self.invalid_new_job = {
+            "contractor id": "",
+            "client id": 2,
             "start time": "2020 11 25T12:00"
         }
 
@@ -68,18 +88,6 @@ class FsndCapstoneTestCase(unittest.TestCase):
         self.change_job_time = {
             "start time": "2021 11 25T12:00"
         }
-
-        #Add new restaurant if database is empty with good token and set current_rest_id
-        #if Restaurant.query.filter(Restaurant.owner_id != 'badtoken').count() == 0:
-        #    res = self.client().post('/restaurants', headers={"Authorization": "Bearer {}".format(self.manager)}, json=self.new_restaurant)
-        #self.current_rest_id = Restaurant.query.order_by(Restaurant.id.desc()).filter(Restaurant.owner_id != 'badtoken').first().id
-
-        # add new restaurant with bad token is it doesnt exist, and set bad_rest_id
-        #if Restaurant.query.filter(Restaurant.owner_id == 'badtoken').count() == 0:
-        #    bad_token_rest = Restaurant(name="Bad name", address="bad address", owner_id="badtoken")
-        #    bad_token_rest.insert()
-        #self.bad_rest_id = Restaurant.query.filter(Restaurant.owner_id == 'badtoken').first().id
-
 
 
 
@@ -93,120 +101,441 @@ class FsndCapstoneTestCase(unittest.TestCase):
 
     def test_homepage(self):
         res = self.client().get('/')
+        data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 200)
+        self.assertIn('health', data)
+        self.assertEqual(data['health'], 'Running!!')
 
 
-#    def test_post_restaurant_with_valid_token(self):
-#        res = self.client().post('/restaurants', headers={"Authorization": "Bearer {}".format(self.manager)}, json=self.new_restaurant)
-#        data = json.loads(res.data)
-#
-#        self.assertEqual(res.status_code, 200)
-#        self.assertEqual(data['success'], True)
+#Tests for /contractor start
+
+    def test_get_contractors_without_token(self):
+        """Failing Test trying to make a call without token"""
+        res = self.client().get('/contractors')
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 401)
+        self.assertFalse(data["success"])
+        self.assertEqual(data["message"], "Authorization header is expected.")
+
+    def test_get_contractors(self):
+        """Passing Test for GET /contractors"""
+        res = self.client().get('/contractors', headers={
+            'Authorization': "Bearer {}".format(self.employee_token)
+        })
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(len(data))
+        self.assertTrue(data["success"])
+        self.assertIn("contractors", data)
+        self.assertTrue(len(data["contractors"]))
+
+    def test_404_get_contractor_by_id(self):
+        """Failing Test for GET /contractors/<int:contractor_id>"""
+        res = self.client().get('/contractors/100', headers={
+            'Authorization': "Bearer {}".format(self.employee_token)
+        })
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 404)
+        self.assertFalse(data['success'])
+        self.assertIn('message', data)
+
+    def test_get_contractor_by_id(self):
+        """Passing Test for GET /contractor/<int:contractor_id>"""
+        res = self.client().get('/contractors/2', headers={
+            'Authorization': "Bearer {}".format(self.employee_token)
+        })
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(data["success"])
+        self.assertIn('contractor', data)
+        self.assertIn('name', data['contractor'])
+        self.assertTrue(len(data["contractor"]["phone"]))
+
+    def test_create_contractor_with_employee_token(self):
+        """Passing Test for POST /contractors"""
+        res = self.client().post('/contractors', headers={
+            'Authorization': "Bearer {}".format(self.employee_token)
+        }, json=self.new_contractor)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(data["success"])
+        self.assertIn('added', data)
+
+    def test_400_create_invalid_contractor(self):
+        """Failing Test for POST /contractors"""
+        res = self.client().post('/contractors', headers={
+            'Authorization': "Bearer {}".format(self.employee_token)
+        }, json=self.invalid_new_contractor)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 400)
+        self.assertFalse(data["success"])
+        self.assertIn('message', data)
+
+    def test_update_contractor_info(self):
+        """Passing Test for PATCH /contractors/<int:contractor_id>"""
+        res = self.client().patch('/contractors/2', headers={
+            'Authorization': "Bearer {}".format(self.manager_token)
+        }, json=self.change_contractor_phone)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(data["success"])
+        self.assertIn('contractor', data)
+
+    def test_404_update_contractor_info(self):
+        """Failing Test for PATCH /contractors/<int:contractor_id>"""
+        res = self.client().patch('/contractors/100', headers={
+            'Authorization': "Bearer {}".format(self.manager_token)
+        }, json=self.change_contractor_phone)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 404)
+        self.assertFalse(data["success"])
+        self.assertIn('message', data)
+
+    def test_401_update_contractor_info(self):
+        """Failing Test for PATCH /contractors/<int:contractor_id>"""
+        res = self.client().patch('/contractors/2', headers={
+            'Authorization': "Bearer {}".format(self.employee_token)
+        }, json=self.change_contractor_phone)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 401)
+        self.assertFalse(data["success"])
+        self.assertIn('message', data)
 
 
-#    def test_401_post_restaurant_with_invalid_token(self):
-#        res = self.client().post('/restaurants', headers={"Authorization": "Bearer {}".format(self.badtoken)}, json=self.new_restaurant)
-#        data = json.loads(res.data)
+    def test_401_delete_contractor_with_employee_token(self):
+        """Failing Test for DELETE /contractors/<int:contractor_id>"""
+        res = self.client().delete('/contractors/1', headers={
+            'Authorization': "Bearer {}".format(self.employee_token)
+        })
+        data = json.loads(res.data)
 
-#        self.assertEqual(res.status_code, 401)
-#        self.assertEqual(data['success'], False)
+        self.assertEqual(res.status_code, 401)
+        self.assertFalse(data["success"])
+        self.assertIn('message', data)
 
+    def test_404_delete_contractor_with_manager_token(self):
+        """Passing Test for DELETE /contractors/<int:contractor_id>"""
+        res = self.client().delete('/contractors/100', headers={
+            'Authorization': "Bearer {}".format(self.manager_token)
+        })
+        data = json.loads(res.data)
 
-
-#    def test_get_restaurants(self):
-#        res = self.client().get('/restaurants')
-#        data = json.loads(res.data)
-
-#        restaurants = Restaurant.query.order_by(Restaurant.id).all()
-#        output = [restaurant.format() for restaurant in restaurants]
-
-#        self.assertEqual(res.status_code, 200)
-#        self.assertEqual(data['success'], True)
-#        self.assertEqual(data['restaurants'], output)
-
-
-
-#    def test_get_restaurant_by_id(self):
-#        res = self.client().get('/restaurants/' + str(self.current_rest_id))
-#        data = json.loads(res.data)
-
-#        restaurant = Restaurant.query.get(self.current_rest_id)
-#        format_rest = restaurant.format()
-
-#        self.assertEqual(res.status_code, 200)
-#        self.assertEqual(data['restaurants'], format_rest)
+        self.assertEqual(res.status_code, 404)
+        self.assertFalse(data["success"])
+        self.assertIn('message', data)
 
 
+#We delete contractor with id 5 because it is the one created in a prior test
+    def test_delete_contractor_with_manager_token(self):
+        """Passing Test for DELETE /contractors/<int:contractor_id>"""
+        res = self.client().delete('/contractors/5', headers={
+            'Authorization': "Bearer {}".format(self.manager_token)
+        })
+        data = json.loads(res.data)
 
-#    def test_patch_restaurant_by_id(self):
-#        res = self.client().patch('/restaurants/' + str(self.current_rest_id), headers={"Authorization": "Bearer {}".format(self.manager)}, json=self.change_restaurant_address)
-#        data = json.loads(res.data)
-
-#        restaurant = Restaurant.query.get(self.current_rest_id)
-#        format_rest = restaurant.format()
-
-#        self.assertEqual(res.status_code, 200)
-#        self.assertEqual(data['updated_restaurant']['address'], self.change_restaurant_address['address'])
-
-
-
-#    def test_patch_restaurant_that_is_not_owners(self):
-#        res = self.client().patch('/restaurants/' + str(self.bad_rest_id), headers={"Authorization": "Bearer {}".format(self.manager)}, json=self.change_restaurant_address)
-
-#        self.assertEqual(res.status_code, 401)
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(data["success"])
+        self.assertIn('contractor', data)
 
 
+#Tests for /client starts
 
-#    def test_patch_restaurant_that_does_not_exist(self):
-#        res = self.client().patch('/restaurants/' + str(self.current_rest_id + 1000), headers={"Authorization": "Bearer {}".format(self.manager)}, json=self.change_restaurant_address)
+    def test_get_client_without_token(self):
+        """Failing Test trying to make a call without token"""
+        res = self.client().get('/clients')
+        data = json.loads(res.data)
 
-#        self.assertEqual(res.status_code, 422)
+        self.assertEqual(res.status_code, 401)
+        self.assertFalse(data["success"])
+        self.assertEqual(data["message"], "Authorization header is expected.")
+
+    def test_get_clients(self):
+        """Passing Test for GET /clients"""
+        res = self.client().get('/clients', headers={
+            'Authorization': "Bearer {}".format(self.employee_token)
+        })
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(len(data))
+        self.assertTrue(data["success"])
+        self.assertIn("clients", data)
+        self.assertTrue(len(data["clients"]))
+
+    def test_404_get_client_by_id(self):
+        """Failing Test for GET /clients/<int:clients_id>"""
+        res = self.client().get('/clients/100', headers={
+            'Authorization': "Bearer {}".format(self.employee_token)
+        })
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 404)
+        self.assertFalse(data['success'])
+        self.assertIn('message', data)
+
+    def test_get_client_by_id(self):
+        """Passing Test for GET /clients/<int:client_id>"""
+        res = self.client().get('/clients/2', headers={
+            'Authorization': "Bearer {}".format(self.employee_token)
+        })
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(data["success"])
+        self.assertIn('client', data)
+        self.assertIn('name', data['client'])
+        self.assertTrue(len(data["client"]["phone"]))
+
+    def test_create_client_with_employee_token(self):
+        """Passing Test for POST /clients"""
+        res = self.client().post('/clients', headers={
+            'Authorization': "Bearer {}".format(self.employee_token)
+        }, json=self.new_client)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(data["success"])
+        self.assertIn('added', data)
+
+    def test_400_create_invalid_client(self):
+        """Failing Test for POST /clients"""
+        res = self.client().post('/clients', headers={
+            'Authorization': "Bearer {}".format(self.employee_token)
+        }, json=self.invalid_new_client)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 400)
+        self.assertFalse(data["success"])
+        self.assertIn('message', data)
+
+    def test_update_client_info(self):
+        """Passing Test for PATCH /clients/<int:client_id>"""
+        res = self.client().patch('/clients/2', headers={
+            'Authorization': "Bearer {}".format(self.manager_token)
+        }, json=self.change_client_address)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(data["success"])
+        self.assertIn('client', data)
+
+    def test_404_update_client_info(self):
+        """Failing Test for PATCH /clients/<int:client_id>"""
+        res = self.client().patch('/clients/100', headers={
+            'Authorization': "Bearer {}".format(self.manager_token)
+        }, json=self.change_client_address)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 404)
+        self.assertFalse(data["success"])
+        self.assertIn('message', data)
+
+
+    def test_401_update_client_info(self):
+        """Failing Test for PATCH /clients/<int:client_id>"""
+        res = self.client().patch('/clients/2', headers={
+            'Authorization': "Bearer {}".format(self.employee_token)
+        }, json=self.change_client_address)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 401)
+        self.assertFalse(data["success"])
+        self.assertIn('message', data)
+
+
+    def test_401_delete_client_with_employee_token(self):
+        """Failing Test for DELETE /clients/<int:client_id>"""
+        res = self.client().delete('/clients/1', headers={
+            'Authorization': "Bearer {}".format(self.employee_token)
+        })
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 401)
+        self.assertFalse(data["success"])
+        self.assertIn('message', data)
+
+    def test_404_delete_client_with_manager_token(self):
+        """Passing Test for DELETE /clients/<int:client_id>"""
+        res = self.client().delete('/clients/100', headers={
+            'Authorization': "Bearer {}".format(self.manager_token)
+        })
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 404)
+        self.assertFalse(data["success"])
+        self.assertIn('message', data)
 
 
 
-#    def test_post_reservation_with_vaild_customer(self):
-#        res = self.client().post('/restaurants/' + str(self.current_rest_id)  + '/reservation', headers={"Authorization": "Bearer {}".format(self.customer)}, json=self.reservation_info)
-#        data = json.loads(res.data)
+#We delete client with id 5, because it is the one created in one of the prior tests.
+    def test_delete_client_with_manager_token(self):
+        """Passing Test for DELETE /clients/<int:client_id>"""
+        res = self.client().delete('/clients/5', headers={
+            'Authorization': "Bearer {}".format(self.manager_token)
+        })
+        data = json.loads(res.data)
 
-#        self.assertEqual(res.status_code, 200)
-
-
-
-#    def test_post_reservation_with_invaild_customer(self):
-#        res = self.client().post('/restaurants/' + str(self.current_rest_id)  + '/reservation', headers={"Authorization": "Bearer {}".format(self.badtoken)}, json=self.reservation_info)
-#        data = json.loads(res.data)
-
-#        self.assertEqual(res.status_code, 401)
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(data["success"])
+        self.assertIn('client', data)
 
 
+# Tests for /jobs start.
+    def test_get_jobs_without_token(self):
+        """Failing Test trying to make a call without token"""
+        res = self.client().get('/jobs')
+        data = json.loads(res.data)
 
-#    def test_post_reservation_with_non_existant_restaurant(self):
-#        res = self.client().post('/restaurants/' + str(self.current_rest_id + 1000)  + '/reservation', headers={"Authorization": "Bearer {}".format(self.customer)}, json=self.reservation_info)
-#        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 401)
+        self.assertFalse(data["success"])
+        self.assertEqual(data["message"], "Authorization header is expected.")
 
-#        self.assertEqual(res.status_code, 422)
+    def test_get_jobs(self):
+        """Passing Test for GET /jobs"""
+        res = self.client().get('/jobs', headers={
+            'Authorization': "Bearer {}".format(self.employee_token)
+        })
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(len(data))
+        self.assertTrue(data["success"])
+        self.assertIn("jobs", data)
+        self.assertTrue(len(data["jobs"]))
+
+
+    def test_404_get_job_by_id(self):
+        """Failing Test for GET /jobs/<int:job_id>"""
+        res = self.client().get('/jobs/100', headers={
+            'Authorization': "Bearer {}".format(self.employee_token)
+        })
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 404)
+        self.assertFalse(data['success'])
+        self.assertIn('message', data)
+
+
+    def test_get_job_by_id(self):
+        """Passing Test for GET /jobs/<int:job_id>"""
+        res = self.client().get('/jobs/2', headers={
+            'Authorization': "Bearer {}".format(self.employee_token)
+        })
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(data["success"])
+        self.assertIn('job', data)
 
 
 
-#    def test_delete_restaurant_with_valid_owner(self):
-#        res = self.client().delete('/restaurants/' + str(self.current_rest_id), headers={"Authorization": "Bearer {}".format(self.manager)})
+    def test_create_job_with_employee_token(self):
+        """Passing Test for POST /jobs"""
+        res = self.client().post('/jobs', headers={
+            'Authorization': "Bearer {}".format(self.employee_token)
+        }, json=self.new_job)
+        data = json.loads(res.data)
 
-#        deleted_rest = Restaurant.query.get(self.current_rest_id)
-
-#        self.assertEqual(res.status_code, 200)
-#        self.assertEqual(deleted_rest, None)
-
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(data["success"])
+        self.assertIn('added', data)
 
 
-#    def test_delete_non_existant_restaurant(self):
-#        res = self.client().delete('/restaurants/' + str((self.current_rest_id + 10000)), headers={"Authorization": "Bearer {}".format(self.manager)})
+    def test_400_create_invalid_job(self):
+        """Failing Test for POST /jobs"""
+        res = self.client().post('/jobs', headers={
+            'Authorization': "Bearer {}".format(self.employee_token)
+        }, json=self.invalid_new_job)
+        data = json.loads(res.data)
 
-#        deleted_rest = Restaurant.query.get(self.current_rest_id + 10000)
+        self.assertEqual(res.status_code, 400)
+        self.assertFalse(data["success"])
+        self.assertIn('message', data)
 
-#        self.assertEqual(res.status_code, 422)
-#        self.assertEqual(deleted_rest, None)
 
+    def test_update_job_info(self):
+        """Passing Test for PATCH /jobs/<int:job_id>"""
+        res = self.client().patch('/jobs/2', headers={
+            'Authorization': "Bearer {}".format(self.manager_token)
+        }, json=self.change_job_time)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(data["success"])
+        self.assertIn('job', data)
+
+
+    def test_404_update_job_info(self):
+        """Failing Test for PATCH /jobs/<int:job_id>"""
+        res = self.client().patch('/jobs/100', headers={
+            'Authorization': "Bearer {}".format(self.manager_token)
+        }, json=self.change_job_time)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 404)
+        self.assertFalse(data["success"])
+        self.assertIn('message', data)
+
+
+
+    def test_401_update_job_info(self):
+        """Failing Test for PATCH /jobs/<int:job_id>"""
+        res = self.client().patch('/jobs/2', headers={
+            'Authorization': "Bearer {}".format(self.employee_token)
+        }, json=self.change_job_time)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 401)
+        self.assertFalse(data["success"])
+        self.assertIn('message', data)
+
+
+
+    def test_401_delete_job_with_employee_token(self):
+        """Failing Test for DELETE /jobs/<int:job_id>"""
+        res = self.client().delete('/jobs/2', headers={
+            'Authorization': "Bearer {}".format(self.employee_token)
+        })
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 401)
+        self.assertFalse(data["success"])
+        self.assertIn('message', data)
+
+
+    def test_404_delete_job_with_manager_token(self):
+        """Failing Test for DELETE /jobs/<int:job_id>"""
+        res = self.client().delete('/jobs/100', headers={
+            'Authorization': "Bearer {}".format(self.manager_token)
+        })
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 404)
+        self.assertFalse(data["success"])
+        self.assertIn('message', data)
+
+
+#We delete job with id 5, because it is the one created in one of the prior tests.
+    def test_delete_job_with_manager_token(self):
+        """Passing Test for DELETE /jobs/<int:job_id>"""
+        res = self.client().delete('/jobs/5', headers={
+            'Authorization': "Bearer {}".format(self.manager_token)
+        })
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(data["success"])
+        self.assertIn('client', data)
 
 
 
