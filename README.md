@@ -418,7 +418,7 @@ DELETE '/jobs/int:job_id'
  psql capstone_test < testdata.sql
  ```
 
- 3. IN test_app.py, set the database_name to "capstone_test" and database_path to your local machine.
+ 3. In test_app.py, set the database_name to "capstone_test" and database_path to your local machine.
 
  4. From the project directory run the following command in the command line:
  ```bash
@@ -434,3 +434,12 @@ drop database capstone_test
 create database capstone_test
 psql capstone_test < testdata.sql
 ```
+
+# Author
+
+- Danie van Rensburg - [Github](https://github.com/Merlin427)
+
+# Acknowledgements
+
+- Victor Dojnov - https://github.com/vdojnov
+- The Udacity mentors and community.  
