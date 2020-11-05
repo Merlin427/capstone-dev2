@@ -17,7 +17,7 @@ Follow the instructions to install the latest version of python for your platfor
 #### Virtual Environment
 For Python projects, it is recommended that you work within a virtual environment as this will keep the dependencies separate and organised for all your projects. Refer to the Python documentation on how to create a virtual environment.
 
-####Pip Dependencies
+#### Pip Dependencies
 
 Once you have your virtual environment setup and running, you can install the other dependencies by running:
 
@@ -54,19 +54,21 @@ Within this account, you will need to create an API with RBAC enabled. Two Roles
 
 Employee
 
-'''bash permissions:
-        get:anything
-        post:anything
-        '''
+'''bash
+permissions:
+  get:anything
+  post:anything
+'''
 
 Manager
 
-'''bash permissions:
-        get:anything
-        post:anything
-        patch:anything
-        delete:anything
-        '''
+'''bash
+permissions:
+  get:anything
+  post:anything
+  patch:anything
+  delete:anything
+'''
 
 Note the identifier, as this is needed in the setup of the application.
 
@@ -114,7 +116,6 @@ Base URL: This application can be run locally. The hosted version is at ''' bash
 15. DELETE '/clients/int:client_id'
 16. DELETE '/jobs/int:job_id'
 
-'''bash
 
 GET '/'
 - No Authorisation required
@@ -360,5 +361,3 @@ DELETE '/jobs/int:job_id'
   "success": true,
   "job": (job id as an integer)
 }
-
-'''
