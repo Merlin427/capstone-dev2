@@ -535,7 +535,7 @@ class FsndCapstoneTestCase(unittest.TestCase):
 
         self.assertEqual(res.status_code, 200)
         self.assertTrue(data["success"])
-        self.assertIn('client', data)
+        self.assertIn('job', data)
 
 
 

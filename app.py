@@ -366,7 +366,7 @@ def create_app(test_config=None):
 
         return jsonify({
             'success' : True,
-            'client' : job.id
+            'job' : job.id
         })
 
 
