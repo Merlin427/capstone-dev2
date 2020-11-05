@@ -69,10 +69,12 @@ permissions:
 
 Note the identifier, as this is needed in the setup of the application.
 
+Auth0 `AUTH0_DOMAIN`, `API_AUDIENCE` and `ALGORITHMS` must be updated in app.py
+
 
 ## Running the server
 
-From within the `backend` directory first ensure you are working using your created virtual environment.
+From within the project directory first ensure you are working using your created virtual environment.
 
 To run the server, execute:
 
@@ -90,7 +92,7 @@ Setting the `FLASK_APP` variable to `app.py` directs flask to use the `app.py` f
 
 ## Getting Started
 
-Base URL: This application can be run locally. The hosted version is at ``` bash somelink ```
+Base URL: This application can be run locally. `localhost:5000`
 
 ## Endpoints and Error Handlers
 
@@ -420,14 +422,16 @@ DELETE '/jobs/int:job_id'
 
  3. In test_app.py, set the database_name to "capstone_test" and database_path to your local machine.
 
- 4. From the project directory run the following command in the command line:
+ 4. The employee_token and manager_token must be updated with fresh tokens after completing Auth0 account setup.
+
+ 5. From the project directory run the following command in the command line:
  ```bash
 python3 test_app.py
 ```
 
-4. 37 Tests should complete successfully.
+6. 37 Tests should complete successfully.
 
-5. The database should be reset completely between testing sessions, this can be done by dropping the database, recreating it and repopulating with testdata.sql
+7. The database should be reset completely between testing sessions, this can be done by dropping the database, recreating it and repopulating with testdata.sql
 
 ```bash
 drop database capstone_test
