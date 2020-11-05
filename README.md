@@ -3,7 +3,6 @@
 ## Capstone Project for Udacity's Full Stack Web Developer Nanodegree
 This app will help an electrical contracting company manage their personnel and jobs. The purpose of the project is to demonstrate the skills learned in the Udacity Full Stack Nano Degree program.
 
-Heroku Link:
 
 Local browser address: http//:localhost:5000
 
