@@ -5,8 +5,6 @@ import os
 from flask import Flask, request, abort, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
-from flask_migrate import Migrate
-from authlib.integrations.flask_client import OAuth
 from six.moves.urllib.parse import urlencode
 import json
 from functools import wraps
