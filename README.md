@@ -3,7 +3,7 @@
 ## Capstone Project for Udacity's Full Stack Web Developer Nanodegree
 This app will help an electrical contracting company manage their personnel and jobs. The purpose of the project is to demonstrate the skills learned in the Udacity Full Stack Nano Degree program.
 
-
+App live on Heroku: https://contractor-manager.herokuapp.com
 Local browser address: http//:localhost:5000
 
 ## Getting Started
@@ -75,6 +75,19 @@ Auth0 `AUTH0_DOMAIN`, `API_AUDIENCE` and `ALGORITHMS` must be updated in app.py
 
 From within the project directory first ensure you are working using your created virtual environment.
 
+Before running the application locally, make the following changes in the app.py file in root directory:
+
+Replace the following import statements:
+
+```bash
+  from database.models import db_drop_and_create_all, setup_db, Actor, Movie
+  from auth.auth import AuthError, requires_auth
+  ```
+with
+```bash
+  from .database.models import db_drop_and_create_all, setup_db, Actor, Movie
+  from .auth.auth import AuthError, requires_auth
+```
 To run the server, execute:
 
 ```bash
@@ -419,18 +432,20 @@ DELETE '/jobs/int:job_id'
  psql capstone_test < testdata.sql
  ```
 
- 3. In test_app.py, set the database_name to "capstone_test" and database_path to your local machine.
+ 3. In setup.sh, set the local variables to reflect conditions on your local machine.
 
  4. The employee_token and manager_token must be updated with fresh tokens after completing Auth0 account setup.
 
- 5. From the project directory run the following command in the command line:
+ 5. From the project directory run the command ```bash source setup.sh``` to set local variables.
+
+ 6. From the project directory run the following command in the command line:
  ```bash
 python3 test_app.py
 ```
 
-6. 37 Tests should complete successfully.
+7. 37 Tests should complete successfully.
 
-7. The database should be reset completely between testing sessions, this can be done by dropping the database, recreating it and repopulating with testdata.sql
+8. The database should be reset completely between testing sessions, this can be done by dropping the database, recreating it and repopulating with testdata.sql
 
 ```bash
 drop database capstone_test
