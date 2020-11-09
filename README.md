@@ -80,12 +80,12 @@ Before running the application locally, make the following changes in the app.py
 Replace the following import statements:
 
 ```bash
-  from database.models import db_drop_and_create_all, setup_db, Actor, Movie
+  from models import db_drop_and_create_all, setup_db, Actor, Movie
   from auth.auth import AuthError, requires_auth
   ```
 with
 ```bash
-  from .database.models import db_drop_and_create_all, setup_db, Actor, Movie
+  from .models import db_drop_and_create_all, setup_db, Actor, Movie
   from .auth.auth import AuthError, requires_auth
 ```
 To run the server, execute:
