@@ -15,9 +15,9 @@ from sqlalchemy import exc
 import json
 
 
-AUTH0_DOMAIN = 'dvcoffee.us.auth0.com'
-API_AUDIENCE = 'http://localhost:5000'
-ALGORITHMS = ["RS256"]
+#AUTH0_DOMAIN = 'dvcoffee.us.auth0.com'
+#API_AUDIENCE = 'http://localhost:5000'
+#ALGORITHMS = ["RS256"]
 
 
 

@@ -15,8 +15,9 @@ class FsndCapstoneTestCase(unittest.TestCase):
         self.client = self.app.test_client
 
         # Test database name
-        self.database_name = "capstone_test"
-        self.database_path = "postgres://danievanrensburg:Danie427*@localhost:5432/" + self.database_name
+        #self.database_name = "capstone_test"
+        #self.database_path = "postgres://danievanrensburg:Danie427*@localhost:5432/" + self.database_name
+        self.database_path = os.environ['DATABASE_URL']
         setup_db(self.app, self.database_path)
 
         # binds the app to the current context
@@ -30,9 +31,8 @@ class FsndCapstoneTestCase(unittest.TestCase):
 
         # Test variables
         # TOKENS
-        self.manager_token = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InJCZnJJX2pDMm1lTF83SnFwU2JibyJ9.eyJpc3MiOiJodHRwczovL2R2Y29mZmVlLnVzLmF1dGgwLmNvbS8iLCJzdWIiOiJhdXRoMHw1Zjg0MjNjNTg4YTI1YTAwNmJiZGI2OWMiLCJhdWQiOiJodHRwOi8vbG9jYWxob3N0OjUwMDAiLCJpYXQiOjE2MDQ1NTYyMjUsImV4cCI6MTYwNDY0MjYyNSwiYXpwIjoieldKZldnc09lbGNVWTF5WXd1cHZvZmMyb0NyN0pPNTIiLCJzY29wZSI6IiIsInBlcm1pc3Npb25zIjpbImRlbGV0ZTphbnl0aGluZyIsImdldDphbnl0aGluZyIsInBhdGNoOmFueXRoaW5nIiwicG9zdDphbnl0aGluZyJdfQ.AqW9R2cegCFrX5YTDKulpaFBz4irpdeamDpwqYBXlEChWQxie3XJpTzbiFKH13lRkWbgfx0FHHlO_E2E93K1lmdreI-Rlyp2G4PTLhP_hfHmckGmkt0xGmoKLXYAjYTlhPB_ofHtlZs-tiWNKtTg-4ZKatTHfhn5_JCJhhlchGW_R9l2s97F2OfsG5h4hRw6CotQc72sHvc3O_0tPD3FY7Z2Fzudx2VG3VZ6qNJ_cxMWhQw5UCuY5PwaC9OVF85fvu_MIwWpA5o7PVI79LRGP_ew9oBuRhENqKpnFPCWEilisxf81ik0kspAiI1zEr0iqcI3ayv05hU1bC7yuOhDAw'
-        self.employee_token = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InJCZnJJX2pDMm1lTF83SnFwU2JibyJ9.eyJpc3MiOiJodHRwczovL2R2Y29mZmVlLnVzLmF1dGgwLmNvbS8iLCJzdWIiOiJhdXRoMHw1Zjg1NjYxODljZmRiYzAwNmUwZWU1YjQiLCJhdWQiOiJodHRwOi8vbG9jYWxob3N0OjUwMDAiLCJpYXQiOjE2MDQ1NTYzNDYsImV4cCI6MTYwNDY0Mjc0NiwiYXpwIjoieldKZldnc09lbGNVWTF5WXd1cHZvZmMyb0NyN0pPNTIiLCJzY29wZSI6IiIsInBlcm1pc3Npb25zIjpbImdldDphbnl0aGluZyIsInBvc3Q6YW55dGhpbmciXX0.QlJPU2hCh-1YkuLIAydOYSSBZmQ3XgLsPkbFBh0OjgYdcWaxbj68le0458bJrYZ39w7hXzcjQAyIkmQSkh1IwZs6EEOv3StYp78jFcp9CvcnGGSYaHAEmYOO-H_pjpquONoifKltimsdZ2VbcTnNqWYIQrVKgb3FMwlXhz2g6qS4SwlYzOMg_1X9cqkYwSM0kqSuomIBCowXJaak0IU_S_6Sknt3ikISmH67YNtRgLN86BMpljCGVgZhmyWIRpnxoYPKvl_mfZTl0FhMwcNrNCDHLAUStxKjKBFvmFQKYBpXzLxzx8nuvAf85qb4zQgNQCJL3XhzJFj0bEe8nd1PCg'
-        self.badtoken = 'badtoken'
+        self.manager_token = os.environ['manager_token']
+        self.employee_token = os.environ['employee_token']
 
         # New Contractor
         self.new_contractor = {
