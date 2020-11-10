@@ -1,6 +1,6 @@
-#----------------------------------------------------------------------------#
+# ----------------------------------------------------------------------------#
 # Imports
-#----------------------------------------------------------------------------#
+# ----------------------------------------------------------------------------#
 import os
 from flask import Flask, request, abort, jsonify
 from flask_sqlalchemy import SQLAlchemy
@@ -15,61 +15,50 @@ from sqlalchemy import exc
 import json
 
 
-#AUTH0_DOMAIN = 'dvcoffee.us.auth0.com'
-#API_AUDIENCE = 'http://localhost:5000'
-#ALGORITHMS = ["RS256"]
+# AUTH0_DOMAIN = 'dvcoffee.us.auth0.com'
+# API_AUDIENCE = 'http://localhost:5000'
+# ALGORITHMS = ["RS256"]
 
-
-
-#----------------------------------------------------------------------------#
+# ----------------------------------------------------------------------------#
 # App Config
-#----------------------------------------------------------------------------#
+# ----------------------------------------------------------------------------#
 def create_app(test_config=None):
     app = Flask(__name__)
     setup_db(app)
-    #app.config.from_object('config')
-    #db.init_app(app)
     CORS(app)
-    #migrate = Migrate(app, db)
 
     @app.route('/')
     def health():
         return jsonify({'health': 'Running!!'}), 200
 
-
-
     @app.route('/contractors', methods=['GET'])
     @requires_auth('get:anything')
-    def contractors(payload): #remember to pass in payload when activating auth
+    def contractors(payload):
         try:
             contractors=Contractor.query.all()
 
             return jsonify({
                 'success': True,
-                'contractors': [contractor.long() for contractor in contractors]
+                'contractors': [contractor.long() \
+                for contractor in contractors]
             })
 
-        except:
+        except Exception:
             abort(500)
-
-
 
     @app.route('/contractors/<int:contractor_id>', methods=['GET'])
     @requires_auth('get:anything')
-    def show_contractor(payload, contractor_id): #payload, contractor_id
+    def show_contractor(payload, contractor_id):
         try:
             contractor = Contractor.query.get(contractor_id)
-
 
             return jsonify({
                 'success': True,
                 'contractor': contractor.long()
             })
 
-        except:
+        except Exception:
             abort(404)
-
-
 
     @app.route('/contractors', methods=['POST'])
     @requires_auth('post:anything')
@@ -80,10 +69,11 @@ def create_app(test_config=None):
             abort(400)
 
         try:
-            new_contractor = Contractor(name=body['name'].strip(), phone=body['phone'].strip())
+            new_contractor = Contractor(name=body['name'].strip(),\
+             phone=body['phone'].strip())
             new_contractor.insert()
 
-        except:
+        except Exception:
             abort(500)
 
         return jsonify({
@@ -91,14 +81,9 @@ def create_app(test_config=None):
             'added': new_contractor.id
         })
 
-
-
-
-
-
     @app.route('/contractors/<int:contractor_id>', methods=['DELETE'])
     @requires_auth('delete:anything')
-    def delete_contractor(payload, contractor_id): #payload
+    def delete_contractor(payload, contractor_id):
 
         contractor=Contractor.query.get(contractor_id)
         if contractor is None:
@@ -107,14 +92,13 @@ def create_app(test_config=None):
         try:
             contractor.delete()
 
-        except:
+        except Exception:
             abort(500)
 
         return jsonify({
             'success' : True,
             'contractor' : contractor.id
         })
-
 
     @app.route('/contractors/<int:contractor_id>', methods=['PATCH'])
     @requires_auth('patch:anything')
@@ -132,7 +116,7 @@ def create_app(test_config=None):
 
         try:
             contractor.update()
-        except:
+        except Exception:
             abort(500)
 
         return jsonify({
@@ -144,54 +128,48 @@ def create_app(test_config=None):
 
     @app.route('/clients', methods=['GET'])
     @requires_auth('get:anything')
-    def clients(payload): #remember to pass in payload when activating auth
+    def clients(payload):
         try:
             clients=Client.query.all()
             if not clients:
                 abort(404)
-
 
             return jsonify({
                 'success': True,
                 'clients': [client.long() for client in clients]
             })
 
-        except:
+        except Exception:
             abort(500)
-
-
 
     @app.route('/clients/<int:client_id>', methods=['GET'])
     @requires_auth('get:anything')
-    def show_client(payload, client_id): #payload, contractor_id
+    def show_client(payload, client_id):
         try:
             client = Client.query.get(client_id)
-
 
             return jsonify({
                 'success': True,
                 'client': client.long()
             })
 
-        except:
+        except Exception:
             abort(404)
-
-
 
     @app.route('/clients', methods=['POST'])
     @requires_auth('post:anything')
     def add_client(payload):
         body = request.get_json()
 
-
         if (body['name'].strip()=="") or (body['phone'].strip()==""):
             abort(400)
 
         try:
-            new_client = Client(name=body['name'].strip(), phone=body['phone'].strip(), address=body['address'].strip())
+            new_client = Client(name=body['name'].strip(), \
+            phone=body['phone'].strip(), address=body['address'].strip())
             new_client.insert()
 
-        except:
+        except Exception:
             abort(422)
 
         return jsonify({
@@ -199,14 +177,9 @@ def create_app(test_config=None):
             'added': new_client.id
         })
 
-
-
-
-
-
     @app.route('/clients/<int:client_id>', methods=['DELETE'])
     @requires_auth('delete:anything')
-    def delete_client(payload, client_id): #payload
+    def delete_client(payload, client_id):
 
         client=Client.query.get(client_id)
         if client is None:
@@ -215,14 +188,13 @@ def create_app(test_config=None):
         try:
             client.delete()
 
-        except:
+        except Exception:
             abort(500)
 
         return jsonify({
             'success' : True,
             'client' : client.id
         })
-
 
     @app.route('/clients/<int:client_id>', methods=['PATCH'])
     @requires_auth('patch:anything')
@@ -244,7 +216,7 @@ def create_app(test_config=None):
         try:
             client.update()
 
-        except:
+        except Exception:
             abort(500)
 
         return jsonify({
@@ -252,28 +224,23 @@ def create_app(test_config=None):
             'client' : client.id
         }), 200
 
-
-
-
     @app.route('/jobs', methods=['GET'])
     @requires_auth('get:anything')
-    def jobs(payload): #remember to pass in payload when activating auth
+    def jobs(payload):
         try:
             jobs=Job.query.all()
-
 
             return jsonify({
                 'success': True,
                 'jobs': [job.long() for job in jobs]
             })
 
-        except:
+        except Exception:
             abort(500)
-
 
     @app.route('/jobs/<int:job_id>', methods=['GET'])
     @requires_auth('get:anything')
-    def show_job(payload, job_id): #payload
+    def show_job(payload, job_id):
         job = Job.query.get(job_id)
 
         if not job:
@@ -288,26 +255,23 @@ def create_app(test_config=None):
 
                 })
 
-            except:
+            except Exception:
                 abort(500)
-
-
 
     @app.route('/jobs', methods=['POST'])
     @requires_auth('post:anything')
     def add_job(payload):
         body = request.get_json()
 
-
-
         if (body['contractor id']=="") or (body['client id']==""):
             abort(400)
 
         try:
-            new_job = Job(contractor_id=body['contractor id'], client_id=body['client id'], start_time=body['start time'])
+            new_job = Job(contractor_id=body['contractor id'], \
+            client_id=body['client id'], start_time=body['start time'])
             new_job.insert()
 
-        except:
+        except Exception:
             abort(500)
 
         return jsonify({
@@ -315,13 +279,11 @@ def create_app(test_config=None):
             'added': new_job.id
         })
 
-
-
-
     @app.route('/jobs/<int:job_id>', methods=['PATCH'])
     @requires_auth('patch:anything')
     def edit_job(payload, job_id):
         job=Job.query.get(job_id)
+
         if job is None:
             abort(404)
 
@@ -337,7 +299,7 @@ def create_app(test_config=None):
 
         try:
             job.update()
-        except:
+        except Exception:
             abort(500)
 
 
@@ -346,12 +308,9 @@ def create_app(test_config=None):
             'job' : job.id
         }), 200
 
-
-
-
     @app.route('/jobs/<int:job_id>', methods=['DELETE'])
     @requires_auth('delete:anything')
-    def delete_job(payload, job_id): #payload
+    def delete_job(payload, job_id):
 
         job=Job.query.get(job_id)
         if job is None:
@@ -359,7 +318,7 @@ def create_app(test_config=None):
 
         try:
             job.delete()
-        except:
+        except Exception:
             abort(500)
 
         return jsonify({
@@ -368,18 +327,16 @@ def create_app(test_config=None):
         })
 
 
-
-        #----------------------------------------------------------------------------#
-        # Error Handlers
-        #----------------------------------------------------------------------------#
+# ----------------------------------------------------------------------------#
+# Error Handlers
+# ----------------------------------------------------------------------------#
     @app.errorhandler(422)
     def unprocessable(error):
         return jsonify({
-                        "success": False,
-                        "error": 422,
-                        "message": "unprocessable"
-                        }), 422
-
+            "success": False,
+            "error": 422,
+            "message": "unprocessable"
+        }), 422
 
     @app.errorhandler(400)
     def bad_request(error):
