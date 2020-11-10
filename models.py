@@ -30,8 +30,8 @@ class Client(db.Model):
     name = db.Column(db.String())
     address = db.Column(db.String(120))
     phone = db.Column(db.String(120))
-    jobs =  db.relationship('Job', backref='client', lazy=True,\
-                            passive_deletes=True)
+    jobs = db.relationship('Job', backref='client', lazy=True,
+                           passive_deletes=True)
 
     def __init__(self, name, address, phone):
         self.name = name
@@ -72,8 +72,8 @@ class Contractor(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String())
     phone = db.Column(db.String(120))
-    jobs = db.relationship('Job', backref='contractor', lazy=True, \
-                            passive_deletes=True)
+    jobs = db.relationship('Job', backref='contractor', lazy=True,
+                           passive_deletes=True)
 
     def __init__(self, name, phone):
         self.name = name
@@ -110,10 +110,13 @@ class Job(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     start_time = db.Column(db.DateTime, nullable=True)
-    contractor_id = db.Column(db.Integer, db.ForeignKey('contractor.id',\
-                                ondelete='CASCADE'), nullable=False)
-    client_id = db.Column(db.Integer, db.ForeignKey('client.id', \
-                            ondelete='CASCADE'), nullable=False)
+    contractor_id = db.Column(db.Integer,
+                              db.ForeignKey('contractor.id',
+                                            ondelete='CASCADE'),
+                              nullable=False)
+    client_id = db.Column(db.Integer, db.ForeignKey('client.id',
+                                                    ondelete='CASCADE'),
+                          nullable=False)
 
     def __init__(self, contractor_id, client_id, start_time):
         self.contractor_id = contractor_id

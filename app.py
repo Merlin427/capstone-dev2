@@ -35,12 +35,12 @@ def create_app(test_config=None):
     @requires_auth('get:anything')
     def contractors(payload):
         try:
-            contractors=Contractor.query.all()
+            contractors = Contractor.query.all()
 
             return jsonify({
                 'success': True,
-                'contractors': [contractor.long() \
-                for contractor in contractors]
+                'contractors': [contractor.long()
+                                for contractor in contractors]
             })
 
         except Exception:
@@ -65,12 +65,12 @@ def create_app(test_config=None):
     def add_contractor(payload):
         body = request.get_json()
 
-        if (body['name'].strip()=="") or (body['phone'].strip()==""):
+        if (body['name'].strip() == "") or (body['phone'].strip() == ""):
             abort(400)
 
         try:
-            new_contractor = Contractor(name=body['name'].strip(),\
-             phone=body['phone'].strip())
+            new_contractor = Contractor(name=body['name'].strip(),
+                                        phone=body['phone'].strip())
             new_contractor.insert()
 
         except Exception:
@@ -85,7 +85,7 @@ def create_app(test_config=None):
     @requires_auth('delete:anything')
     def delete_contractor(payload, contractor_id):
 
-        contractor=Contractor.query.get(contractor_id)
+        contractor = Contractor.query.get(contractor_id)
         if contractor is None:
             abort(404)
 
@@ -96,14 +96,14 @@ def create_app(test_config=None):
             abort(500)
 
         return jsonify({
-            'success' : True,
-            'contractor' : contractor.id
+            'success': True,
+            'contractor': contractor.id
         })
 
     @app.route('/contractors/<int:contractor_id>', methods=['PATCH'])
     @requires_auth('patch:anything')
     def edit_contractor(payload, contractor_id):
-        contractor=Contractor.query.get(contractor_id)
+        contractor = Contractor.query.get(contractor_id)
         if contractor is None:
             abort(404)
 
@@ -120,17 +120,15 @@ def create_app(test_config=None):
             abort(500)
 
         return jsonify({
-            'success' : True,
-            'contractor' : contractor.id
+            'success': True,
+            'contractor': contractor.id
         }), 200
-
-
 
     @app.route('/clients', methods=['GET'])
     @requires_auth('get:anything')
     def clients(payload):
         try:
-            clients=Client.query.all()
+            clients = Client.query.all()
             if not clients:
                 abort(404)
 
@@ -161,12 +159,13 @@ def create_app(test_config=None):
     def add_client(payload):
         body = request.get_json()
 
-        if (body['name'].strip()=="") or (body['phone'].strip()==""):
+        if (body['name'].strip() == "") or (body['phone'].strip() == ""):
             abort(400)
 
         try:
-            new_client = Client(name=body['name'].strip(), \
-            phone=body['phone'].strip(), address=body['address'].strip())
+            new_client = Client(name=body['name'].strip(),
+                                phone=body['phone'].strip(),
+                                address=body['address'].strip())
             new_client.insert()
 
         except Exception:
@@ -181,7 +180,7 @@ def create_app(test_config=None):
     @requires_auth('delete:anything')
     def delete_client(payload, client_id):
 
-        client=Client.query.get(client_id)
+        client = Client.query.get(client_id)
         if client is None:
             abort(404)
 
@@ -192,14 +191,14 @@ def create_app(test_config=None):
             abort(500)
 
         return jsonify({
-            'success' : True,
-            'client' : client.id
+            'success': True,
+            'client': client.id
         })
 
     @app.route('/clients/<int:client_id>', methods=['PATCH'])
     @requires_auth('patch:anything')
     def edit_client(payload, client_id):
-        client=Client.query.get(client_id)
+        client = Client.query.get(client_id)
         if client is None:
             abort(404)
 
@@ -220,15 +219,15 @@ def create_app(test_config=None):
             abort(500)
 
         return jsonify({
-            'success' : True,
-            'client' : client.id
+            'success': True,
+            'client': client.id
         }), 200
 
     @app.route('/jobs', methods=['GET'])
     @requires_auth('get:anything')
     def jobs(payload):
         try:
-            jobs=Job.query.all()
+            jobs = Job.query.all()
 
             return jsonify({
                 'success': True,
@@ -250,8 +249,8 @@ def create_app(test_config=None):
             try:
 
                 return jsonify({
-                "success": True,
-                "job": [job.long()]
+                    "success": True,
+                    "job": [job.long()]
 
                 })
 
@@ -263,12 +262,13 @@ def create_app(test_config=None):
     def add_job(payload):
         body = request.get_json()
 
-        if (body['contractor id']=="") or (body['client id']==""):
+        if (body['contractor id'] == "") or (body['client id'] == ""):
             abort(400)
 
         try:
-            new_job = Job(contractor_id=body['contractor id'], \
-            client_id=body['client id'], start_time=body['start time'])
+            new_job = Job(contractor_id=body['contractor id'],
+                          client_id=body['client id'],
+                          start_time=body['start time'])
             new_job.insert()
 
         except Exception:
@@ -282,7 +282,7 @@ def create_app(test_config=None):
     @app.route('/jobs/<int:job_id>', methods=['PATCH'])
     @requires_auth('patch:anything')
     def edit_job(payload, job_id):
-        job=Job.query.get(job_id)
+        job = Job.query.get(job_id)
 
         if job is None:
             abort(404)
@@ -302,17 +302,16 @@ def create_app(test_config=None):
         except Exception:
             abort(500)
 
-
         return jsonify({
-            'success' : True,
-            'job' : job.id
+            'success': True,
+            'job': job.id
         }), 200
 
     @app.route('/jobs/<int:job_id>', methods=['DELETE'])
     @requires_auth('delete:anything')
     def delete_job(payload, job_id):
 
-        job=Job.query.get(job_id)
+        job = Job.query.get(job_id)
         if job is None:
             abort(404)
 
@@ -322,14 +321,15 @@ def create_app(test_config=None):
             abort(500)
 
         return jsonify({
-            'success' : True,
-            'job' : job.id
+            'success': True,
+            'job': job.id
         })
 
 
 # ----------------------------------------------------------------------------#
 # Error Handlers
 # ----------------------------------------------------------------------------#
+
     @app.errorhandler(422)
     def unprocessable(error):
         return jsonify({
@@ -379,6 +379,7 @@ def create_app(test_config=None):
         }), 401
 
     return app
+
 
 app = create_app()
 

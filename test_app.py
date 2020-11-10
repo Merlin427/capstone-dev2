@@ -16,7 +16,7 @@ class FsndCapstoneTestCase(unittest.TestCase):
         # Test database name
         # self.database_name = "capstone_test"
         # self.database_path = "postgres://danievanrensburg:\
-                                # Danie427*@localhost:5432/" + self.database_name
+        # Danie427*@localhost:5432/" + self.database_name
         self.database_path = os.environ['DATABASE_URL']
         setup_db(self.app, self.database_path)
 
@@ -86,7 +86,6 @@ class FsndCapstoneTestCase(unittest.TestCase):
         self.change_job_time = {
             "start time": "2021 11 25T12:00"
         }
-
 
     def tearDown(self):
         """Executed after each test"""
@@ -209,7 +208,6 @@ class FsndCapstoneTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 401)
         self.assertFalse(data["success"])
         self.assertIn('message', data)
-
 
     def test_401_delete_contractor_with_employee_token(self):
         """Failing Test for DELETE /contractors/<int:contractor_id>"""
@@ -414,7 +412,6 @@ class FsndCapstoneTestCase(unittest.TestCase):
         self.assertFalse(data['success'])
         self.assertIn('message', data)
 
-
     def test_get_job_by_id(self):
         """Passing Test for GET /jobs/<int:job_id>"""
         res = self.client().get('/jobs/2', headers={
@@ -513,8 +510,6 @@ class FsndCapstoneTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertTrue(data["success"])
         self.assertIn('job', data)
-
-
 
 
 if __name__ == "__main__":

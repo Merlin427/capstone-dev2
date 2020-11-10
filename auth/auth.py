@@ -15,6 +15,8 @@ API_AUDIENCE = os.environ.get('API_AUDIENCE')
 AuthError Exception
 A standardized way to communicate auth failure modes
 '''
+
+
 class AuthError(Exception):
     def __init__(self, error, status_code):
         self.error = error
@@ -22,6 +24,7 @@ class AuthError(Exception):
 
 # Auth Header
 # Some code used from the BasicFlaskAuth project
+
 
 def get_token_auth_header():
     """Obtains the Access Token from the Authorization Header
@@ -54,6 +57,7 @@ def get_token_auth_header():
 
     token = parts[1]
     return token
+
 
 def check_permissions(permission, payload):
     if 'permissions' not in payload:
@@ -125,6 +129,7 @@ def verify_decode_jwt(token):
                 'code': 'invalid_header',
                 'description': 'Unable to find the appropriate key.'
             }, 400)
+
 
 def requires_auth(permission=''):
 
